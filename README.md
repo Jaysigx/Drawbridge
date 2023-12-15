@@ -36,6 +36,19 @@ For server owners:
 
 Feel free to fork this repository, make changes, and submit pull requests. Contributions are welcome!
 
+**Current  Issues**
+
+started to add function for qbcore.
+
+there are still issues  of bridge not loading in.
+i always have to restart the script to load the model. in my environment i have separated stream files and code to 2 resources, just to load reload script and prevent crash.
+
+**future roadmap:** interact sound for bridge and interactable traffic gates.
+
+
+once the car bridge is fully polished, i will then work on train bridge.
+
+
 **License**
 
 This script is open-sourced under the MIT License.
