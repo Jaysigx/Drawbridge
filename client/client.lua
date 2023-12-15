@@ -1,3 +1,4 @@
+
 local bridgeObject = nil
 local initialBridgePosition = vector3(353.3317, -2315.838, 6.9)
 local targetBridgeHeight = initialBridgePosition.z
@@ -5,12 +6,61 @@ local bridgeMovementSpeed = 0.005
 local maxBridgeHeight = initialBridgePosition.z + 30.0
 local minBridgeHeight = initialBridgePosition.z
 
+local QBCore = exports['qb-core']:GetCoreObject()
+
+TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
+    TriggerEvent('bridge:spawnBridge')
+end)
+
+
 RegisterNetEvent('bridge:spawnBridge')
 AddEventHandler('bridge:spawnBridge', function()
     if not bridgeObject then
         bridgeObject = CreateObject(GetHashKey('car_drawbridge'), initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, true)
         FreezeEntityPosition(bridgeObject, true)
         SetEntityInvincible(bridgeObject, true)
+    else
+        local doesExist = DoesEntityExist(bridgeObject)
+        if doesExist then
+            local currentPos = GetEntityCoords(bridgeObject)
+            SetEntityCoordsNoOffset(bridgeObject, currentPos.x, currentPos.y, targetBridgeHeight, true, true, true)
+        else
+            bridgeObject = CreateObject(GetHashKey('car_drawbridge'), initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, true)
+            FreezeEntityPosition(bridgeObject, true)
+            SetEntityInvincible(bridgeObject, true)
+        end
+    end
+end)
+
+function SpawnBridgeIfNotExists()
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+
+    if playerCoords then
+        local bridgeCoords = vector3(353.3317, -2315.838, 6.9) -- Replace with the actual bridge coordinates
+        if bridgeCoords ~= nil then
+            local distance = #(playerCoords - bridgeCoords)
+            print("Distance between player and bridge:", distance) -- Print the distance
+            if distance < 150.0 and not DoesEntityExist(bridgeObject) then
+                TriggerEvent('bridge:spawnBridge')
+            end
+        else
+            print("Bridge object coordinates are nil.")
+        end
+    else
+        print("Player coordinates are nil.")
+    end
+end
+
+
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(1000) -- Adjust the interval as needed
+        SpawnBridgeIfNotExists()
     end
 end)
 
