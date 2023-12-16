@@ -5,8 +5,9 @@ name 'Jaysigx-Bridge'
 description 'Bridge go upy and downy'
 author 'Jaysigx'
 
-client_scripts {
-    'client/*.lua', 
+client_script {
+    'client/client.lua',
+    'client/gates.lua'
 }
 server_scripts {
     'server/*.lua', 
