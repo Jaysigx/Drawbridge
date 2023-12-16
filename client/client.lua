@@ -1,32 +1,57 @@
-
 local bridgeObject = nil
 local initialBridgePosition = vector3(353.3317, -2315.838, 6.8615)
 local targetBridgeHeight = initialBridgePosition.z
 local bridgeMovementSpeed = 0.009
 local maxBridgeHeight = initialBridgePosition.z + 30.0
 local minBridgeHeight = initialBridgePosition.z
+local model = GetHashKey'car_drawbridge'
 
-
-local QBCore = exports['qb-core']:GetCoreObject()
-
-TriggerEvent('QBCore:GetObject', function(obj) QBCore = obj end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
 AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
-    TriggerEvent('PE-Bridge:spawnBridge')
-end)
-    
-RegisterNetEvent('PE-Bridge:spawnBridge')
-AddEventHandler('PE-Bridge:spawnBridge', function(initialPosition)
-    if not bridgeObject then
-        bridgeObject = CreateObject(GetHashKey('car_drawbridge'), initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, true)
-        FreezeEntityPosition(bridgeObject, true)
-        SetEntityInvincible(bridgeObject, true)
-    end
+    CreateBridgeObject()
 end)
 
+local function PrepareModel(model)
+    RequestModel(model)
+    while not HasModelLoaded(model) do
+        Citizen.Wait(100)
+    end
+end
+
+-- Function to create an object after preparing the model
+local bridgeObjectCreated = false
+
+local function CreateBridgeObject()
+    PrepareModel(model)
+    if not bridgeObjectCreated then
+        bridgeObject = CreateObject(model, initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, true)
+        if bridgeObject ~= nil and bridgeObject ~= 0 then
+            SetEntityLodDist(bridgeObject, 500)
+            SetEntityAsMissionEntity(bridgeObject, true, true)
+            FreezeEntityPosition(bridgeObject, true)
+            SetEntityInvincible(bridgeObject, true)
+            bridgeObjectCreated = true -- Set the flag to true after creating the bridge object
+        else
+            print("Failed to create the bridge object. Model may be invalid.")
+        end
+    end
+end
+
+
+
+
+Citizen.CreateThread(function()
+    TriggerServerEvent('PE-Bridge:SyncInitialPosition', initialBridgePosition)
+end)
+
+AddEventHandler('playerSpawned', function()
+    CreateBridgeObject()
+end)
+
+
 RegisterCommand("spawnbridge", function()
-    TriggerServerEvent('PE-Bridge:spawnBridge', initialBridgePosition)
+    CreateBridgeObject()
 end, false)
 
 function SpawnBridgeIfNotExists()
@@ -37,9 +62,9 @@ function SpawnBridgeIfNotExists()
         local bridgeCoords = initialBridgePosition
         if bridgeCoords then
             local distance = #(playerCoords - bridgeCoords)
-            --print("Distance between player and PE-Bridge:", distance)
+            print("Distance between player and PE-Bridge:", distance)
             if distance < 150.0 and not DoesEntityExist(bridgeObject) then
-                TriggerEvent('PE-Bridge:spawnBridge', initialBridgePosition)
+                --CreateBridgeObject()
             end
         else
             print("Bridge object coordinates are nil.")
@@ -49,63 +74,31 @@ function SpawnBridgeIfNotExists()
     end
 end
 
-local function GetBridgeHeight()
-    return 6.8615 -- Sample height; replace with your logic to retrieve the bridge height
+
+-- Adjusting the bridge height
+local function AdjustBridgeHeight(amount)
+    if bridgeObject then
+        local startingHeight = GetEntityCoords(bridgeObject).z
+        local targetHeight = math.min(math.max(startingHeight + amount, minBridgeHeight), maxBridgeHeight)
+        targetBridgeHeight = targetHeight
+    end
 end
 
+RegisterCommand("raiseBridge", function()
+    AdjustBridgeHeight(10.0)
+end, false)
 
+RegisterCommand("lowerBridge", function()
+    AdjustBridgeHeight(-20.0)
+end, false)
 
-local function CheckBridgeHeight()
-    local bridgeHeight = GetBridgeHeight()
-    print("Bridge height is:", bridgeHeight)
-end
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(5000) -- Adjust the interval as needed
-        CheckBridgeHeight()
-    end
-end)
-
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(1000) -- Adjust the interval as needed
-        SpawnBridgeIfNotExists()
-    end
-end)
 
 function Lerp(start, stop, t)
     return start + (stop - start) * t
 end
 
-local function adjustBridgeHeight(amount)
-    if bridgeObject then
-        local startingHeight = GetEntityCoords(bridgeObject).z
-        if startingHeight == initialBridgePosition.z then
-            startingHeight = initialBridgePosition.z + 30.0
-        end
-        local targetHeight = math.min(math.max(startingHeight + amount, minBridgeHeight), maxBridgeHeight)
-        targetBridgeHeight = targetHeight
-        TriggerServerEvent('PE-Bridge:adjustBridgeHeight', targetBridgeHeight)
-        if targetBridgeHeight >= maxBridgeHeight then
-            print("Bridge reached maximum height.")
-        elseif targetBridgeHeight <= minBridgeHeight then
-            print("Bridge reached minimum height.")
-        end
-    end
-end
-
-RegisterCommand("raiseBridge", function()
-    adjustBridgeHeight(10.0)
-end, false)
-
-RegisterCommand("lowerBridge", function()
-    adjustBridgeHeight(-20.0)
-end, false)
-
+-- Handling bridge movement
 Citizen.CreateThread(function()
-    TriggerEvent('PE-Bridge:spawnBridge')
-
     while true do
         Citizen.Wait(0)
         if bridgeObject and targetBridgeHeight ~= 0 then
@@ -133,6 +126,12 @@ Citizen.CreateThread(function()
                 end
             end
         end
+    end
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() == resourceName then
+      CreateBridgeObject()
     end
 end)
 
