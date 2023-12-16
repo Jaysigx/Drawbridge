@@ -1,5 +1,5 @@
 local bridgeObject = nil
-local initialBridgePosition = vector3(353.3317, -2315.838, 6.8615)
+local initialBridgePosition = Config.BridgePosition
 local targetBridgeHeight = initialBridgePosition.z
 local bridgeMovementSpeed = 0.009
 local maxBridgeHeight = initialBridgePosition.z + 30.0
@@ -7,10 +7,7 @@ local minBridgeHeight = initialBridgePosition.z
 local model = GetHashKey'car_drawbridge'
 
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded')
-AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
-    CreateBridgeObject()
-end)
+
 
 local function PrepareModel(model)
     RequestModel(model)
@@ -39,8 +36,6 @@ local function CreateBridgeObject()
 end
 
 
-
-
 Citizen.CreateThread(function()
     TriggerServerEvent('PE-Bridge:SyncInitialPosition', initialBridgePosition)
 end)
@@ -54,28 +49,48 @@ RegisterCommand("spawnbridge", function()
     CreateBridgeObject()
 end, false)
 
-function SpawnBridgeIfNotExists()
-    local playerPed = PlayerPedId()
-    local playerCoords = GetEntityCoords(playerPed)
+local isBridgeSpawned = false
 
-    if playerCoords then
-        local bridgeCoords = initialBridgePosition
-        if bridgeCoords then
-            local distance = #(playerCoords - bridgeCoords)
-            print("Distance between player and PE-Bridge:", distance)
-            if distance < 150.0 and not DoesEntityExist(bridgeObject) then
-                --CreateBridgeObject()
-            end
-        else
-            print("Bridge object coordinates are nil.")
+function SpawnBridgeIfNotExists()
+    Citizen.CreateThread(function()
+        PrepareModel(model)
+        while not HasModelLoaded(model) do
+            Citizen.Wait(100)
         end
-    else
-        print("Player coordinates are nil.")
-    end
+
+        while true do
+            Citizen.Wait(1000) 
+
+            local playerPed = PlayerPedId()
+            local playerCoords = GetEntityCoords(playerPed)
+
+            if playerCoords then
+                local bridgeCoords = initialBridgePosition.coords -- Check this line
+                if bridgeCoords then
+                    local distance = #(playerCoords - bridgeCoords)
+                    print("Distance between player and PE-Bridge:", distance)
+
+                    if distance < 150.0 and not isBridgeSpawned then
+                        CreateBridgeObject()
+                        isBridgeSpawned = true
+                    elseif distance >= 150.0 and isBridgeSpawned then
+                        DeleteEntity(bridgeObject)
+                        bridgeObject = nil
+                        isBridgeSpawned = false
+                    end
+                else
+                    print("Bridge object coordinates are nil.")
+                end
+            else
+                print("Player coordinates are nil.")
+            end
+        end
+    end)
 end
 
 
--- Adjusting the bridge height
+
+
 local function AdjustBridgeHeight(amount)
     if bridgeObject then
         local startingHeight = GetEntityCoords(bridgeObject).z
