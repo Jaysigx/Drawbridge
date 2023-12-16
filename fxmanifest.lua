@@ -13,6 +13,10 @@ server_scripts {
     'server/*.lua', 
 }
 
+shared_script {
+    'config.lua' -- Include the config file here as well if needed
+}
+
 data_file 'DLC_ITYP_REQUEST' 'stream/*.ytyp' 
 
 map 'map.lua' 
