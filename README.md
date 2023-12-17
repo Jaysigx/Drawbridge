@@ -12,7 +12,7 @@ Configurability: Easily adjust parameters such as movement speed and height limi
 
 Ensure you have the necessary dependencies and configurations set up.
 Add the script files to your FiveM server's resources folder.
-Start the script in your server.cfg file: ensure car_drawbridge.
+andd just ensure resource name
 
 **Commands**
 
