@@ -1,6 +1,6 @@
-Car Drawbridge Script
+Drawbridge Script
 =================
-This script allows for the dynamic control and movement of a drawbridge in the game world, providing a way to raise or lower it using in-game commands.
+This script allows for the dynamic control and movement of drawbridges in Fivem, providing a way to raise or lower it using in-game commands.
 
 Features
 =================
@@ -18,14 +18,19 @@ Commands
 =================
 ```
 /bridge: Spawns the bridge
-/raiseBridge: Raises the drawbridge by 10 units.
-/lowerBridge: Lowers the drawbridge by 10 units.
+/bridgeUp 1-2 Z.height
+          -for example /bridgeUp 1 20
+/bridgeDown 1-2 Z.height
+          -for example /bridgeDown 1 20
+/gateall up/down    --incomplete
+/gate 1-4 up/down   --incomplete
 ```
 
 Configuration
 =================
-Movement Speed: Adjust the speed of the drawbridge movement by modifying the bridgeMovementSpeed variable in client.lua.
-Height Limits: Set the maximum and minimum allowed heights for the drawbridge by adjusting maxBridgeHeight and minBridgeHeight in client.lua.
+Movement Speed: Adjust the speed of the drawbridge movement by modifying the bridgeMovementSpeed variable in client/cl_movebridge.lua.
+Height Limits: Set the maximum and minimum allowed heights for the drawbridge by adjusting maxBridgeHeight and minBridgeHeight in client/cl_movebridge.lua.
+briddge location at where they spawn is in config.lua
 
 Server Integration
 =================
@@ -41,13 +46,14 @@ Feel free to fork this repository, make changes, and submit pull requests. Contr
 
 Current  Issues
 =================
-there are still issues  of bridge not loading in.
-i always have to restart the script to load the model. in my environment i have separated stream files and code to 2 resources, just to load reload script and prevent crash.
+there is no transition for the gates and the rotation for 2 gates is broken
 
 future roadmap:
 =================
 interact sound for bridge and interactable traffic gates.
-once the car bridge is fully polished, i will then work on train bridge.
+transitions for gates. 
+traffic will stop while bridge is not at inital position.
+exports for most functions so server owners can enjoy.
 
 
 License
