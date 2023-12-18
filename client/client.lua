@@ -1,37 +1,35 @@
 local bridgeObject = nil
-local initialBridgePosition = Config.BridgePosition
+local initialBridgePosition = Config.Bridge1Position
 local targetBridgeHeight = initialBridgePosition.z
 local bridgeMovementSpeed = 0.009
 local maxBridgeHeight = initialBridgePosition.z + 30.0
 local minBridgeHeight = initialBridgePosition.z
 local model = GetHashKey('car_drawbridge')
 
-local modelRequested = false
-local bridgeObjectCreated = false
-local bridgeObject = nil
+local isBridgeCreated = false
 
-function PrepareModel(model)
-    if not modelRequested then
-        modelRequested = true
-        RequestModel(model)
-        while not HasModelLoaded(model) do
-            Citizen.Wait(100)
-        end
-    end
-end
+
+
 function LoadModel()
-    PrepareModel(model)
+    local modelRequested = false
+
     while not HasModelLoaded(model) do
-        Citizen.Wait(100)
+        if not modelRequested then
+            modelRequested = true
+            RequestModel(model)
+            print("Requested model: " .. model)
+        end
+        Citizen.Wait(5000)
+        print("Model loading: " .. tostring(IsModelInCdimage(model)), "Model loaded: " .. tostring(HasModelLoaded(model)))
     end
+
+    print("Model loaded successfully: " .. model)
 end
 
-function Log(message)
-    print("[Bridge Debug] " .. message)
-end
+
 
 function CreateBridgeObject()
-    PrepareModel(model)
+    LoadModel()
 
     if not HasModelLoaded(model) then
         print("Model not loaded. Ensure the correct model is used or position is obstructed.")
@@ -43,20 +41,49 @@ function CreateBridgeObject()
     end
 
     bridgeObject = CreateObject(model, initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, false)
-            
+
     if bridgeObject and bridgeObject ~= 0 then
         SetEntityLodDist(bridgeObject, 500)
         SetEntityAsMissionEntity(bridgeObject, true, true)
         FreezeEntityPosition(bridgeObject, true)
         SetEntityInvincible(bridgeObject, true)
-        bridgeObjectCreated = true 
+        isBridgeCreated = true
     else
         print("Failed to create the bridge object. Model may be invalid or position is obstructed.")
     end
 end
 
+
+
+function CreateOrUpdateBridgeObject()
+    if not isBridgeCreated then
+        CreateBridgeObject()
+    else
+        if not DoesEntityExist(bridgeObject) then
+            CreateBridgeObject()
+        end
+    end
+end
+
+
+
 Citizen.CreateThread(function()
-    SpawnBridgeIfNotExists()
+    while true do
+        CreateOrUpdateBridgeObject()
+        Citizen.Wait(5000) -- Adjust the delay as needed
+
+        if HasModelLoaded(model) then
+            print("Car Bridge Loaded")
+        else
+            print("Car Bridge Model is still loading...")
+        end
+    end
+end)
+
+
+
+Citizen.CreateThread(function()
+    CreateBridgeObject()
     TriggerServerEvent('PE-Bridge:SyncInitialPosition', initialBridgePosition)
 end)
 
@@ -73,12 +100,10 @@ end
 
 
 
-
 local isBridgeSpawned = false
 
 function SpawnBridgeIfNotExists()
     Citizen.CreateThread(function()
-
         local playerPed = PlayerPedId()
 
         while true do
@@ -88,17 +113,15 @@ function SpawnBridgeIfNotExists()
 
             if playerCoords then
                 local distance = #(playerCoords - initialBridgePosition)
-                --print("Distance between player and PE-Bridge:", distance)
 
                 if distance < 250.0 then
-                    if not HasModelLoaded(model) then
-                        LoadModel()
-                        while not HasModelLoaded(model) do
-                            Citizen.Wait(100)
-                        end
-                    end
-
                     if not isBridgeSpawned then
+                        if not HasModelLoaded(model) then
+                            LoadModel()
+                            while not HasModelLoaded(model) do
+                                Citizen.Wait(100)
+                            end
+                        end
                         CreateBridgeObject()
                         isBridgeSpawned = true
                     end
@@ -114,44 +137,58 @@ function SpawnBridgeIfNotExists()
     end)
 end
 
+
+
 Citizen.CreateThread(function()
-    SpawnBridgeIfNotExists()
+    CreateBridgeObject()
     TriggerServerEvent('PE-Bridge:SyncInitialPosition', initialBridgePosition)
 end)
 
-AddEventHandler('playerSpawned', SpawnBridgeIfNotExists)
-AddEventHandler('onResourceStart', SpawnBridgeIfNotExists)
+AddEventHandler('playerSpawned', CreateBridgeObject)
+AddEventHandler('onResourceStart', CreateBridgeObject)
 
 
 function adjustBridgeHeight(amount)
     TriggerServerEvent('PE-Bridge:AdjustBridgeHeight', amount)
 end
 
+
+
 Citizen.CreateThread(function()
-    SpawnBridgeIfNotExists()
+    CreateBridgeObject()
 end)
+
+
 
 RegisterNetEvent('PE-Bridge:spawnBridge')
 AddEventHandler('PE-Bridge:spawnBridge', function()
     CreateBridgeObject()
 end)
 
+
+
 RegisterCommand("bridge", function()
     CreateBridgeObject()
 end, false)
 
+
+
 RegisterCommand("raiseBridge", function()
     adjustBridgeHeight(10.0)
 end, false)
+
+
 
 RegisterCommand("lowerBridge", function()
     adjustBridgeHeight(-20.0)
 end, false)
 
 
+
 function Lerp(start, stop, t)
     return start + (stop - start) * t
 end
+
 
 -- Handling bridge movement
 Citizen.CreateThread(function()
@@ -185,20 +222,25 @@ Citizen.CreateThread(function()
     end
 end)
 
+
+
 AddEventHandler('playerSpawned', function()
-    SpawnBridgeIfNotExists()
+    CreateBridgeObject()
 end)
+
+
 
 AddEventHandler('onResourceStart', function(resourceName)
-    SpawnBridgeIfNotExists()
+    CreateBridgeObject()
 end)
 
 
-AddEventHandler('onResourceStop', function(resourceName)
-    if GetCurrentResourceName() == resourceName then
-        if bridgeObject then
-            DeleteEntity(bridgeObject)
-            bridgeObject = nil
-        end
-    end
+
+AddEventHandler('onResourceStop', function(resource)
+	if resource == GetCurrentResourceName() then
+		for _, v in pairs(model) do
+			SetEntityAsMissionEntity(v, false, true)
+			DeleteObject(v)
+		end
+	end
 end)
