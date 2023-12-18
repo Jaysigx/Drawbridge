@@ -7,15 +7,16 @@ author 'Jaysigx'
 
 
 files {
-    'stream/**/car_drawbridge.ydr',
+    'stream/*'
 }
 client_script {
-    'client/client.lua',
-    'client/gates.lua'
+    'client/cl_spawnbridge.lua',
+    'client/cl_movebridge.lua',
+    'client/cl_bridgegates.lua'
 }
 
 server_script {
-    'server/server.lua'
+    'server/main.lua'
 }
 
 shared_script {
