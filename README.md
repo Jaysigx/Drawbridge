@@ -1,30 +1,33 @@
-**Car Drawbridge Script**
+Car Drawbridge Script
 =================
 This script allows for the dynamic control and movement of a drawbridge in the game world, providing a way to raise or lower it using in-game commands.
 
-**Features**
+Features
 =================
 Raise and Lower Commands: Control the drawbridge height using /raiseBridge and /lowerBridge commands.
 Dynamic Movement: Smoothly raises or lowers the drawbridge to the desired height.
 Configurability: Easily adjust parameters such as movement speed and height limits.
 
-**Usage**
+Usage
 =================
 Ensure you have the necessary dependencies and configurations set up.
 Add the script files to your FiveM server's resources folder.
 andd just ensure resource name
 
-**Commands**
+Commands
 =================
+```
+/bridge: Spawns the bridge
 /raiseBridge: Raises the drawbridge by 10 units.
 /lowerBridge: Lowers the drawbridge by 10 units.
+```
 
-**Configuration**
+Configuration
 =================
 Movement Speed: Adjust the speed of the drawbridge movement by modifying the bridgeMovementSpeed variable in client.lua.
 Height Limits: Set the maximum and minimum allowed heights for the drawbridge by adjusting maxBridgeHeight and minBridgeHeight in client.lua.
 
-**Server Integration**
+Server Integration
 =================
 For server owners:
 
@@ -32,21 +35,21 @@ For server owners:
 2.Ensure proper validation and permission logic for bridge adjustments within the server.lua script.
 3.Sync the bridge height changes to all clients using the bridge:syncBridgeHeight event.
 
-**Contributing**
+Contributing
 =================
 Feel free to fork this repository, make changes, and submit pull requests. Contributions are welcome!
 
-**Current  Issues**
+Current  Issues
 =================
 there are still issues  of bridge not loading in.
 i always have to restart the script to load the model. in my environment i have separated stream files and code to 2 resources, just to load reload script and prevent crash.
 
-**future roadmap:** 
+future roadmap:
 =================
 interact sound for bridge and interactable traffic gates.
 once the car bridge is fully polished, i will then work on train bridge.
 
 
-**License**
+License
 =================
 This script is open-sourced under the MIT License.
