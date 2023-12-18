@@ -37,8 +37,9 @@ Server Integration
 For server owners:
 
 1.Place the server.lua in your server's resources folder.
+
 2.Ensure proper validation and permission logic for bridge adjustments within the server.lua script.
-3.Sync the bridge height changes to all clients using the bridge:syncBridgeHeight event.
+
 
 Contributing
 =================
