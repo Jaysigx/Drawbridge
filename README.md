@@ -60,3 +60,6 @@ exports for most functions so server owners can enjoy.
 License
 =================
 This script is open-sourced under the MIT License.
+
+
+credits [PNWParksFan & Smallo](https://www.gta5-mods.com/maps/draw-bridge-map-script) for the bridge models
