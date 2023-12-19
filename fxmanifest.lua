@@ -10,13 +10,11 @@ files {
     'stream/*'
 }
 client_script {
-    'client/cl_spawnbridge.lua',
-    'client/cl_movebridge.lua',
-    'client/cl_bridgegates.lua'
+    'client/cl_*.lua'
 }
 
 server_script {
-    'server/main.lua'
+    'server/sv_*.lua'
 }
 
 shared_script {
