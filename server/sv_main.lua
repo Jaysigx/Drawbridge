@@ -1,13 +1,26 @@
 RegisterServerEvent('syncBridgeSpawn')
 AddEventHandler('syncBridgeSpawn', function()
-    TriggerClientEvent('PE-Bridge:spawnBridge', -1) -- Send event to all clients
+    TriggerClientEvent('PE-Bridge:spawnBridge', -1)
 end)
 
+-- Trigger bridge sync event when the resource starts
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         TriggerEvent('syncBridgeSpawn')
     end
 end)
+
+RegisterNetEvent('syncLights')
+AddEventHandler('syncLights', function(storedStates)
+    lightStates = storedStates
+    local bridgePosition = Config.Bridge1Position
+
+    for model, state in pairs(storedStates) do
+        local lightData = { model = model, targetVector = bridgePosition }
+        TriggerClientEvent('ToggleTrafficLight', -1, lightData, state)
+    end
+end)
+
 
 -- Function to move the bridge up and sync to clients
 function MoveBridgeUp(index, amount)
