@@ -21,5 +21,11 @@ shared_script {
     'config.lua' -- Include the config file here as well if needed
 }
 
+exports {
+    'MoveBridgeUp',
+    'MoveBridgeDown',
+    'bridgelights'
+}
+
 this_is_a_map 'yes'
 
