@@ -89,6 +89,13 @@ exports['bridgeControl']:MoveBridgeUp(1, 20)
 exports['bridgeControl']:MoveBridgeDown(1, 20)
 
 -- Toggle bridge lights on or off with the 'bridgelights' export
+-- Move the bridge up by calling the 'MoveBridgeUp' export
+exports['bridgeControl']:MoveBridgeUp(1, 20)
+
+-- Move the bridge down by using the 'MoveBridgeDown' export
+exports['bridgeControl']:MoveBridgeDown(1, 20)
+
+-- Toggle bridge lights on or off with the 'bridgelights' export
 exports['bridgeControl']:bridgelights(1) -- Turns on the lights
 exports['bridgeControl']:bridgelights(0) -- Turns off the lights
 ```
