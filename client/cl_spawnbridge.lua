@@ -4,6 +4,7 @@ local models = {GetHashKey('car_drawbridge'), GetHashKey('train_drawbridge')}
 local isBridgeCreated = {false, false}
 local bridgeEntities = {nil, nil}
 
+-- Function to load models
 function LoadModel(modelIndex)
     local model = models[modelIndex]
 
@@ -17,30 +18,36 @@ function LoadModel(modelIndex)
     end
 end
 
+-- Function to create bridge objects
 function CreateBridgeObject(index)
     local model = models[index]
     local initialBridgePosition = initialBridgePositions[index]
 
     LoadModel(index)
 
-    if bridgeEntities[index] and DoesEntityExist(bridgeEntities[index]) then
-        DeleteEntity(bridgeEntities[index])
-    end
+    if not isBridgeCreated[index] or not DoesEntityExist(bridgeEntities[index]) then
+        if bridgeEntities[index] and DoesEntityExist(bridgeEntities[index]) then
+            DeleteEntity(bridgeEntities[index])
+        end
 
-    bridgeEntities[index] = CreateObject(model, initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, false)
+        bridgeEntities[index] = CreateObject(model, initialBridgePosition.x, initialBridgePosition.y, initialBridgePosition.z, true, true, false)
 
-    if bridgeEntities[index] and bridgeEntities[index] ~= 0 then
-        SetEntityLodDist(bridgeEntities[index], 500)
-        SetEntityAsMissionEntity(bridgeEntities[index], true, true)
-        FreezeEntityPosition(bridgeEntities[index], true)
-        SetEntityInvincible(bridgeEntities[index], true)
-        isBridgeCreated[index] = true
-        table.insert(bridgeObjects, bridgeEntities[index])
+        if bridgeEntities[index] and bridgeEntities[index] ~= 0 then
+            SetEntityLodDist(bridgeEntities[index], 500)
+            SetEntityAsMissionEntity(bridgeEntities[index], true, true)
+            FreezeEntityPosition(bridgeEntities[index], true)
+            SetEntityInvincible(bridgeEntities[index], true)
+            isBridgeCreated[index] = true
+            table.insert(bridgeObjects, bridgeEntities[index])
+        else
+            print("Failed to create Bridge object. Model may be invalid or position is obstructed.")
+        end
     else
-        print("Failed to create Bridge object. Model may be invalid or position is obstructed.")
+        print("Bridge object already exists.")
     end
 end
 
+-- Function to check and update bridge objects
 function CreateOrUpdateBridgeObjects()
     for index, _ in ipairs(initialBridgePositions) do
         if not isBridgeCreated[index] or not DoesEntityExist(bridgeEntities[index]) then
@@ -50,6 +57,7 @@ function CreateOrUpdateBridgeObjects()
     end
 end
 
+-- Thread to manage initial bridge objects creation/update
 Citizen.CreateThread(function()
     for index, _ in ipairs(initialBridgePositions) do
         CreateOrUpdateBridgeObjects()
@@ -68,6 +76,7 @@ Citizen.CreateThread(function()
     end
 end)
 
+-- Function to spawn bridge if not exists near player
 function SpawnBridgeIfNotExists(index)
     Citizen.CreateThread(function()
         while true do
@@ -90,19 +99,24 @@ function SpawnBridgeIfNotExists(index)
     end)
 end
 
+-- Thread to check and spawn bridge objects near players
 Citizen.CreateThread(function()
     for index, _ in ipairs(initialBridgePositions) do
         SpawnBridgeIfNotExists(index)
     end
 end)
 
+-- Event handler for player spawned - ensures bridge sync on player spawn
 AddEventHandler('playerSpawned', CreateOrUpdateBridgeObjects)
+
+-- Event handler for resource start - creates bridges on resource start
 AddEventHandler('onResourceStart', function()
     for index, _ in ipairs(initialBridgePositions) do
         CreateBridgeObject(index)
     end
 end)
 
+-- Network event to spawn bridges - to sync bridge objects among players
 RegisterNetEvent('PE-Bridge:spawnBridge')
 AddEventHandler('PE-Bridge:spawnBridge', function()
     for index, _ in ipairs(initialBridgePositions) do
@@ -111,12 +125,7 @@ AddEventHandler('PE-Bridge:spawnBridge', function()
     end
 end)
 
-RegisterCommand("bridge", function()
-    for index, _ in ipairs(initialBridgePositions) do
-        CreateBridgeObject(index)
-    end
-end, false)
-
+-- Event handler for resource stop - cleans up bridges on resource stop
 AddEventHandler('onResourceStop', function(resource)
     if resource == GetCurrentResourceName() then
         for _, bridgeObject in pairs(bridgeObjects) do
