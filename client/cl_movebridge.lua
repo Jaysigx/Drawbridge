@@ -87,8 +87,12 @@ function MoveBridgeDown(index, amount)
     end
 end
 
--- Command to move the bridge up
-RegisterCommand("bridgeUp", function(source, args, rawCommand)
+-- Exports
+
+-- Exports
+
+-- Register the export for moving the bridge up
+exports('MoveBridgeUp', function(bridgeIndex, moveAmount)
     local index = tonumber(args[1]) or 1 -- Bridge index
     local amount = tonumber(args[2]) or 1.0 -- Amount to move
 
@@ -96,16 +100,14 @@ RegisterCommand("bridgeUp", function(source, args, rawCommand)
         if ModelExistsAtIndex(index) then
             EnsureBridgeEntity(index)
             MoveBridgeUp(index, amount)
-        else
-            print("Bridge " .. index .. " model does not exist.")
         end
     else
         print("Invalid bridge index.")
     end
-end, false)
+end)
 
--- Command to move the bridge down
-RegisterCommand("bridgeDown", function(source, args, rawCommand)
+-- Register the export for moving the bridge down
+exports('MoveBridgeDown', function(bridgeIndex, moveAmount)
     local index = tonumber(args[1]) or 1 -- Bridge index
     local amount = tonumber(args[2]) or 1.0 -- Amount to move
 
@@ -113,10 +115,52 @@ RegisterCommand("bridgeDown", function(source, args, rawCommand)
         if ModelExistsAtIndex(index) then
             EnsureBridgeEntity(index)
             MoveBridgeDown(index, amount)
-        else
-            print("Bridge " .. index .. " model does not exist.")
         end
     else
         print("Invalid bridge index.")
+    end
+end)
+
+
+
+-- Command to move the bridge up
+RegisterCommand("bridgeUp", function(source, args, rawCommand)
+    if Config.Commands then
+        local index = tonumber(args[1]) or 1 -- Bridge index
+        local amount = tonumber(args[2]) or 1.0 -- Amount to move
+
+        if index >= 1 and index <= #models then
+            if ModelExistsAtIndex(index) then
+                EnsureBridgeEntity(index)
+                MoveBridgeUp(index, amount)
+            else
+                print("Bridge " .. index .. " model does not exist.")
+            end
+        else
+            print("Invalid bridge index.")
+        end
+    else
+        print("Bridge control commands are disabled in the configuration.")
+    end
+end, false)
+
+-- Command to move the bridge down
+RegisterCommand("bridgeDown", function(source, args, rawCommand)
+    if Config.Commands then
+        local index = tonumber(args[1]) or 1 -- Bridge index
+        local amount = tonumber(args[2]) or 1.0 -- Amount to move
+
+        if index >= 1 and index <= #models then
+            if ModelExistsAtIndex(index) then
+                EnsureBridgeEntity(index)
+                MoveBridgeDown(index, amount)
+            else
+                print("Bridge " .. index .. " model does not exist.")
+            end
+        else
+            print("Invalid bridge index.")
+        end
+    else
+        print("Bridge control commands are disabled in the configuration.")
     end
 end, false)
