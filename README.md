@@ -14,6 +14,26 @@ Ensure you have the necessary dependencies and configurations set up.
 Add the script files to your FiveM server's resources folder.
 andd just ensure resource name
 
+Exports
+=================
+```
+-- Move the bridge up by calling the 'MoveBridgeUp' export
+exports['bridgeControl']:MoveBridgeUp(1, 20)
+
+-- Move the bridge down by using the 'MoveBridgeDown' export
+exports['bridgeControl']:MoveBridgeDown(1, 20)
+
+-- Toggle bridge lights on or off with the 'bridgelights' export
+-- Move the bridge up by calling the 'MoveBridgeUp' export
+exports['bridgeControl']:MoveBridgeUp(1, 20)
+
+-- Move the bridge down by using the 'MoveBridgeDown' export
+exports['bridgeControl']:MoveBridgeDown(1, 20)
+
+-- Toggle bridge lights on or off with the 'bridgelights' export
+exports['bridgeControl']:bridgelights(1) -- Turns on the lights
+exports['bridgeControl']:bridgelights(0) -- Turns off the lights
+```
 Commands
 =================
 ```
@@ -48,25 +68,6 @@ For server owners:
 
 2.Ensure proper validation and permission logic for bridge adjustments within the server.lua script.
 
-
-Contributing
-=================
-Feel free to fork this repository, make changes, and submit pull requests. Contributions are welcome!
-
-Current  Issues
-=================
-```
-- there is no transition for the gates and the rotation for 2 gates is broken
-- Traffic does not stop when traffic lights changed to red (state 1)
-```
-
-
-License
-=================
-This script is open-sourced under the MIT License.
-
-try the updated code in your environment, 
-
 **Version 1.1**
 =================
 ```
@@ -79,26 +80,23 @@ try the updated code in your environment,
       Yellow = 2,
       Reset = 3
 ```
-**how to use exports**
+
+Contributing
+=================
+Feel free to fork this repository, make changes, and submit pull requests. Contributions are welcome!
+
+Current  Issues
 =================
 ```
--- Move the bridge up by calling the 'MoveBridgeUp' export
-exports['bridgeControl']:MoveBridgeUp(1, 20)
-
--- Move the bridge down by using the 'MoveBridgeDown' export
-exports['bridgeControl']:MoveBridgeDown(1, 20)
-
--- Toggle bridge lights on or off with the 'bridgelights' export
--- Move the bridge up by calling the 'MoveBridgeUp' export
-exports['bridgeControl']:MoveBridgeUp(1, 20)
-
--- Move the bridge down by using the 'MoveBridgeDown' export
-exports['bridgeControl']:MoveBridgeDown(1, 20)
-
--- Toggle bridge lights on or off with the 'bridgelights' export
-exports['bridgeControl']:bridgelights(1) -- Turns on the lights
-exports['bridgeControl']:bridgelights(0) -- Turns off the lights
+- there is no transition for the gates and the rotation for 2 gates is broken
+- Traffic does not stop when traffic lights changed to red (state 1)
 ```
+
+License
+=================
+This script is open-sourced under the MIT License.
+
+try the updated code in your environment, 
 =================
 
 again thank you everyone for support along the way, if you find any issues and have a fix, please make a pull request
