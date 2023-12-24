@@ -76,6 +76,20 @@ Citizen.CreateThread(function()
     end
 end)
 
+-- Function to count existing bridges near a position
+function CountExistingBridgesNearPosition(position)
+    local count = 0
+    for _, bridgeEntity in pairs(bridgeEntities) do
+        if bridgeEntity and DoesEntityExist(bridgeEntity) then
+            local distance = #(GetEntityCoords(bridgeEntity) - position)
+            if distance < 250.0 then
+                count = count + 1
+            end
+        end
+    end
+    return count
+end
+
 -- Function to spawn bridge if not exists near player
 function SpawnBridgeIfNotExists(index)
     Citizen.CreateThread(function()
@@ -86,9 +100,12 @@ function SpawnBridgeIfNotExists(index)
             local distance = #(playerCoords - initialBridgePositions[index])
 
             if distance < 250.0 then
-                if not isBridgeCreated[index] then
-                    CreateBridgeObject(index)
-                    return
+                local existingBridgesNearPlayer = CountExistingBridgesNearPosition(initialBridgePositions[index])
+
+                if existingBridgesNearPlayer < 1 then
+                    if not isBridgeCreated[index] then
+                        CreateBridgeObject(index)
+                    end
                 end
             elseif isBridgeCreated[index] then
                 DeleteEntity(bridgeEntities[index])
@@ -106,8 +123,6 @@ Citizen.CreateThread(function()
     end
 end)
 
--- Event handler for player spawned - ensures bridge sync on player spawn
-AddEventHandler('playerSpawned', CreateOrUpdateBridgeObjects)
 
 -- Event handler for resource start - creates bridges on resource start
 AddEventHandler('onResourceStart', function()
