@@ -96,15 +96,16 @@ function TrafficAtBridge()
         if state == LIGHT_STATES.Red then
             print("Traffic lights are red, stopping traffic at the bridge.")
             for _, center in ipairs(bridgeCenters) do
-                addRoadNodeSpeedZone(358.66, -2352.77, 10.19, 20, 0)
-                addRoadNodeSpeedZone(347.9, -2278.23, 10.2, 20, 0)
+                SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.19, 20, 0)
+                SpeedZoneB = AddRoadNodeSpeedZone(347.9, -2278.23, 10.2, 20, 0)
             end
         elseif state == LIGHT_STATES.Green then
             print("Traffic lights are green, resuming traffic at the bridge.")
-            removeRoadNodeSpeedZones()
+            RemoveRoadNodeSpeedZone()
         elseif state == LIGHT_STATES.Reset then
             print("Resetting traffic lights at the bridge.")
-            removeRoadNodeSpeedZones()
+            RemoveRoadNodeSpeedZone(SpeedZoneA)
+            RemoveRoadNodeSpeedZone(SpeedZoneB)
             ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
         else
             print("Invalid traffic light state.")
@@ -112,7 +113,6 @@ function TrafficAtBridge()
         Citizen.Wait(1000) -- Adjust the interval as needed
     end
 end
-
 
 Citizen.CreateThread(TrafficAtBridge)
 
