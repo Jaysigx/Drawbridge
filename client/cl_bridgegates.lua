@@ -60,6 +60,17 @@ RegisterCommand("gateall", function(source, args, rawCommand)
     end
 end, false)
 
+-- Wrapper function to export
+function RaiseLowerGateByIndex(gateIndex, isLowering)
+    local selectedGates = isLowering and gateDownData or gateUpData
+    MoveGate(selectedGates[gateIndex], isLowering)
+end
+
+-- Exports
+exports('MoveGate', MoveGate)
+exports('MoveGates', MoveGates)
+exports('RaiseLowerGateByIndex', RaiseLowerGateByIndex)
+
 function StartResource()
     print('gates are a sexy bunch')
 end
@@ -68,7 +79,14 @@ function StopResource()
     for _, gateData in ipairs(gateUpData) do
         MoveGate(gateData, false) -- Reset gates to their initial positions
     end
-    for _, gateData in ipairs(gateDownData) do
-        MoveGate(gateData, false) -- Reset gates to their initial positions
-    end
 end
+
+-- Optional: Automatically reset gates when resource stops
+AddEventHandler('onResourceStop', function(resourceName)
+    if GetCurrentResourceName() == resourceName then
+        StopResource()
+    end
+end)
+
+-- Call StartResource when the script starts
+StartResource()
