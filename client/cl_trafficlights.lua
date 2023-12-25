@@ -89,22 +89,23 @@ RegisterCommand("bridgelights", function(source, args, rawCommand)
     ToggleAllTrafficLights(state)
 end, false)
 
-local state = LIGHT_STATES.Green 
+local state = LIGHT_STATES.Green
+local SpeedZoneA, SpeedZoneB
 
 function TrafficAtBridge()
     while true do
         if state == LIGHT_STATES.Red then
             print("Traffic lights are red, stopping traffic at the bridge.")
-            for _, center in ipairs(bridgeCenters) do
-                addRoadNodeSpeedZone(358.66, -2352.77, 10.19, 20, 0)
-                addRoadNodeSpeedZone(347.9, -2278.23, 10.2, 20, 0)
-            end
+            SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.19, 20, 0)
+            SpeedZoneB = AddRoadNodeSpeedZone(347.9, -2278.23, 10.2, 20, 0)
         elseif state == LIGHT_STATES.Green then
             print("Traffic lights are green, resuming traffic at the bridge.")
-            removeRoadNodeSpeedZones()
+            RemoveRoadNodeSpeedZone(SpeedZoneA)
+            RemoveRoadNodeSpeedZone(SpeedZoneB)
         elseif state == LIGHT_STATES.Reset then
             print("Resetting traffic lights at the bridge.")
-            removeRoadNodeSpeedZones()
+            RemoveRoadNodeSpeedZone(SpeedZoneA)
+            RemoveRoadNodeSpeedZone(SpeedZoneB)
             ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
         else
             print("Invalid traffic light state.")
@@ -113,6 +114,4 @@ function TrafficAtBridge()
     end
 end
 
-
 Citizen.CreateThread(TrafficAtBridge)
-
