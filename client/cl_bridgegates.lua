@@ -1,16 +1,16 @@
 local initialGatePositions = {}
 local gateUpData = {
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 }
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 }
 }
 
 local gateDownData = {
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = GetHashKey('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 }
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
+    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 }
 }
 
 function RotateGate(object, targetRotation)
