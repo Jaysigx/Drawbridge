@@ -5,6 +5,7 @@ name 'Jaysigx-DrawBridge'
 description 'Drawbridge script for FiveM'
 author 'Jaysigx'
 
+lua54 'yes'
 
 files {
     'stream/*'
