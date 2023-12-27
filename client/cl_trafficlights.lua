@@ -6,10 +6,9 @@ local trafficLights = {
     { model = 'prop_traffic_light_block', targetVector = vector3(350.1459655761719,-2290.653076171875,16.54934310913086) },
     { model = 'prop_traffic_light_block', targetVector = vector3(345.7252502441406,-2290.71875,16.2559642791748) },
     { model = 'prop_traffic_light_block', targetVector = vector3(356.68670654296877,-2341.083984375,16.44212532043457) },
-    { model = 'prop_traffic_light_block', targetVector = vector3(362.175537109375,-2340.93212890625,16.28584289550781) }
+    { model = 'prop_traffic_light_block', targetVector = vector3(362.175537109375,-2340.93212890625,16.28584289550781) },
 }
 local lightStates = {}
-
 local LIGHT_STATES = {
     Green = 0,
     Red = 1,
@@ -21,38 +20,49 @@ local cachedState = LIGHT_STATES.Green
 local prevState = state
 local SpeedZoneA, SpeedZoneB
 
-function ToggleTrafficLight(lightData, state)
+function ToggleTrafficLight(lightIndex, state, sync)
+    lightData = trafficLights[lightIndex]
     local entity = GetClosestObjectOfType(lightData.targetVector.x, lightData.targetVector.y, lightData.targetVector.z, 2.0, lightData.model, false, false, false)
     if DoesEntityExist(entity) then
         SetEntityTrafficlightOverride(entity, state)
-        lightStates[lightData.model] = state
+        lightStates[lightIndex] = state
+        if sync then
+            TriggerServerEvent('bridge:syncLights', lightStates)
+        end
     else
         print("Error: Traffic light entity not found.")
     end
 end
 
-RegisterNetEvent('toggleTrafficLight')
-AddEventHandler('toggleTrafficLight', function(lightData, state)
-    if LIGHT_STATES[state] ~= nil then
-        ToggleTrafficLight(lightData, LIGHT_STATES[state])
-    else
-        print("Error: Invalid traffic light state.")
+RegisterNetEvent('bridge:toggleTrafficLight')
+AddEventHandler('bridge:toggleTrafficLight', function(lightIndex, state)
+    ToggleTrafficLight(lightIndex, state, false)
+end)
+
+RegisterNetEvent('bridge:syncLights')
+AddEventHandler('bridge:syncLights', function(newLightStates)
+    lightStates = newLightStates
+    for lightIndex = 1, #trafficLights do
+        ToggleTrafficLight(lightIndex, lightStates[lightIndex], false)
     end
 end)
 
-function ToggleAllTrafficLights(state)
+function ToggleAllTrafficLights(state, sync)
     cachedState = state
-    for _, lightData in ipairs(trafficLights) do
-        ToggleTrafficLight(lightData, state)
+    for lightIndex = 1, #trafficLights do
+        ToggleTrafficLight(lightIndex, state, false)
+    end
+    if sync then
+        TriggerServerEvent('bridge:syncLights', lightStates)
     end
 end
 
-Citizen.CreateThread(function()
-    for _, lightData in ipairs(trafficLights) do
-        ToggleTrafficLight(lightData, 0) -- Set lights to green on resource start
-    end
-end)
-
+-- replaced with serverside control
+-- Citizen.CreateThread(function()
+--     for lightIndex = 1, #trafficLights do
+--         ToggleTrafficLight(lightIndex, 0, false) -- Set lights to green on resource start
+--     end
+-- end)
 
 function IsPlayerNearLights()
     local players = GetActivePlayers()
@@ -69,55 +79,66 @@ function IsPlayerNearLights()
     return false
 end
 
-function ToggleTrafficLightsBasedOnProximity()
-    while true do
-        Citizen.Wait(1000)
-        if IsPlayerNearLights() then
-            for _, lightData in ipairs(trafficLights) do
-                local storedState = lightStates[lightData.model]
-                ToggleTrafficLight(lightData, storedState)
+if Config.ProximityTrafficLights then
+    function ToggleTrafficLightsBasedOnProximity()
+        while true do
+            Citizen.Wait(1000)
+            if IsPlayerNearLights() then
+                for lightIndex = 1, #trafficLights do
+                    local storedState = lightStates[lightIndex]
+                    ToggleTrafficLight(lightIndex, storedState, false)
+                end
             end
-            TriggerServerEvent('syncLights', lightStates)
         end
     end
+    Citizen.CreateThread(ToggleTrafficLightsBasedOnProximity)
 end
-
-Citizen.CreateThread(ToggleTrafficLightsBasedOnProximity)
 
 exports('bridgelights', function(state)
     local state = tonumber(args[1]) or 0
     ToggleAllTrafficLights(state)
 end)
 
-RegisterCommand("bridgelights", function(source, args, rawCommand)
-    local state = tonumber(args[1]) or 0
-    -- print("setting lights to", state, LIGHT_STATES.Red)
-    ToggleAllTrafficLights(state)
-end, false)
-
-function TrafficAtBridge()
-    while true do
-        if prevState ~= cachedState then
-            prevState = cachedState
-            if cachedState == LIGHT_STATES.Red then
-                print("Traffic lights are red, stopping traffic at the bridge.")
-                SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.2, 8.0, 0)
-                SpeedZoneB = AddRoadNodeSpeedZone(347.90, -2278.23, 10.2, 8.0, 0)
-            elseif cachedState == LIGHT_STATES.Green then
-                print("Traffic lights are green, resuming traffic at the bridge.")
-                RemoveRoadNodeSpeedZone(SpeedZoneA)
-                RemoveRoadNodeSpeedZone(SpeedZoneB)
-            elseif cachedState == LIGHT_STATES.Reset then
-                print("Resetting traffic lights at the bridge.")
-                RemoveRoadNodeSpeedZone(SpeedZoneA)
-                RemoveRoadNodeSpeedZone(SpeedZoneB)
-                ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
-            else
-                print("Invalid traffic light state.")
-            end
-        end
-        Citizen.Wait(1000) -- Adjust the interval as needed
-    end
+if Config.Commands then
+    RegisterCommand("bridgelights", function(source, args, rawCommand)
+        local state = tonumber(args[1]) or 0
+        -- print("setting lights to", state, LIGHT_STATES.Red)
+        ToggleAllTrafficLights(state)
+    end, false)
 end
 
-Citizen.CreateThread(TrafficAtBridge)
+function enableTrafficZones()
+    SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.2, 8.0, 0)
+    SpeedZoneB = AddRoadNodeSpeedZone(347.90, -2278.23, 10.2, 8.0, 0)
+end
+
+function disableTrafficZones()
+    RemoveRoadNodeSpeedZone(SpeedZoneA)
+    RemoveRoadNodeSpeedZone(SpeedZoneB)
+end
+
+if Config.AutomaticTrafficZones then
+    function TrafficAtBridge()
+        while true do
+            if prevState ~= cachedState then
+                prevState = cachedState
+                if cachedState == LIGHT_STATES.Red then
+                    print("Traffic lights are red, stopping traffic at the bridge.")
+                    enableTrafficZones()
+                elseif cachedState == LIGHT_STATES.Green then
+                    print("Traffic lights are green, resuming traffic at the bridge.")
+                    disableTrafficZones()
+                elseif cachedState == LIGHT_STATES.Reset then
+                    print("Resetting traffic lights at the bridge.")
+                    disableTrafficZones()
+                    ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
+                else
+                    print("Invalid traffic light state.")
+                end
+            end
+            Citizen.Wait(1000) -- Adjust the interval as needed
+        end
+    end
+
+    Citizen.CreateThread(TrafficAtBridge)
+end
