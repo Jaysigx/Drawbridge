@@ -17,6 +17,10 @@ local LIGHT_STATES = {
     Reset = 3
 }
 
+local cachedState = LIGHT_STATES.Green
+local prevState = state
+local SpeedZoneA, SpeedZoneB
+
 function ToggleTrafficLight(lightData, state)
     local entity = GetClosestObjectOfType(lightData.targetVector.x, lightData.targetVector.y, lightData.targetVector.z, 2.0, lightData.model, false, false, false)
     if DoesEntityExist(entity) then
@@ -37,6 +41,7 @@ AddEventHandler('toggleTrafficLight', function(lightData, state)
 end)
 
 function ToggleAllTrafficLights(state)
+    cachedState = state
     for _, lightData in ipairs(trafficLights) do
         ToggleTrafficLight(lightData, state)
     end
@@ -86,29 +91,30 @@ end)
 
 RegisterCommand("bridgelights", function(source, args, rawCommand)
     local state = tonumber(args[1]) or 0
+    -- print("setting lights to", state, LIGHT_STATES.Red)
     ToggleAllTrafficLights(state)
 end, false)
 
-local state = LIGHT_STATES.Green
-local SpeedZoneA, SpeedZoneB
-
 function TrafficAtBridge()
     while true do
-        if state == LIGHT_STATES.Red then
-            print("Traffic lights are red, stopping traffic at the bridge.")
-            SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.19, 20, 0)
-            SpeedZoneB = AddRoadNodeSpeedZone(347.9, -2278.23, 10.2, 20, 0)
-        elseif state == LIGHT_STATES.Green then
-            print("Traffic lights are green, resuming traffic at the bridge.")
-            RemoveRoadNodeSpeedZone(SpeedZoneA)
-            RemoveRoadNodeSpeedZone(SpeedZoneB)
-        elseif state == LIGHT_STATES.Reset then
-            print("Resetting traffic lights at the bridge.")
-            RemoveRoadNodeSpeedZone(SpeedZoneA)
-            RemoveRoadNodeSpeedZone(SpeedZoneB)
-            ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
-        else
-            print("Invalid traffic light state.")
+        if prevState ~= cachedState then
+            prevState = cachedState
+            if cachedState == LIGHT_STATES.Red then
+                print("Traffic lights are red, stopping traffic at the bridge.")
+                SpeedZoneA = AddRoadNodeSpeedZone(358.66, -2352.77, 10.2, 8.0, 0)
+                SpeedZoneB = AddRoadNodeSpeedZone(347.90, -2278.23, 10.2, 8.0, 0)
+            elseif cachedState == LIGHT_STATES.Green then
+                print("Traffic lights are green, resuming traffic at the bridge.")
+                RemoveRoadNodeSpeedZone(SpeedZoneA)
+                RemoveRoadNodeSpeedZone(SpeedZoneB)
+            elseif cachedState == LIGHT_STATES.Reset then
+                print("Resetting traffic lights at the bridge.")
+                RemoveRoadNodeSpeedZone(SpeedZoneA)
+                RemoveRoadNodeSpeedZone(SpeedZoneB)
+                ToggleAllTrafficLights(LIGHT_STATES.Green) -- Reset all traffic lights to green
+            else
+                print("Invalid traffic light state.")
+            end
         end
         Citizen.Wait(1000) -- Adjust the interval as needed
     end
