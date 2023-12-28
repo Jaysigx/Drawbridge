@@ -19,7 +19,7 @@ function OpenBridgeSequence()
     enableTrafficZones()
     
     -- turn all traffic lights red
-    for lightIndex = 1, 9 do
+    for lightIndex = 1, 8 do
         ToggleTrafficLight(lightIndex, 1, false)
     end
 
@@ -71,7 +71,7 @@ function OpenBridgeSequence()
     BlinkBridgeLights( 5 )
 
     -- turn all traffic lightsgreen
-    for lightIndex = 1, 9 do
+    for lightIndex = 1, 8 do
         ToggleTrafficLight(lightIndex, 0, false)
     end
 
