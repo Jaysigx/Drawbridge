@@ -1,3 +1,4 @@
+
 local initialGatePositions = {}
 local gateData = {
     { model = 'prop_bridge_barrier_gate_01x', targetVector = vector3(364.69915771484377, -2343.686279296875, 11.39140605926513), minRotationY = -90, maxRotationY = 90, rotationX = 0 },

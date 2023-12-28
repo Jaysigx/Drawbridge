@@ -1,6 +1,6 @@
 local bridgeObjects = {}
 local initialBridgePositions = {Config.Bridge1Position, Config.Bridge2Position}
-local models = {GetHashKey('car_drawbridge'), GetHashKey('train_drawbridge')}
+local models = {joaat('car_drawbridge'), joaat('train_drawbridge')}
 local isBridgeCreated = {false, false}
 local bridgeEntities = {nil, nil}
 

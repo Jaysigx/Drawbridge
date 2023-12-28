@@ -1,5 +1,5 @@
 local initialBridgePositions = {Config.Bridge1Position, Config.Bridge2Position}
-local models = {GetHashKey('car_drawbridge'), GetHashKey('train_drawbridge')}
+local models = {joaat('car_drawbridge'), joaat('train_drawbridge')}
 local bridgeEntities = {nil, nil}
 local minBridgeHeights = {6.8100, 8.2384} -- Heights of the lowest points of the bridges
 local maxBridgeHeight = 40 -- Maximum bridge height
