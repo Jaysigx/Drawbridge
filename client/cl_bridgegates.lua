@@ -1,69 +1,60 @@
+
 local initialGatePositions = {}
-local gateUpData = {
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = 90, minRotationY = -90, maxRotationY = 0 }
+local gateData = {
+    { model = 'prop_bridge_barrier_gate_01x', targetVector = vector3(364.69915771484377, -2343.686279296875, 11.39140605926513), minRotationY = -90, maxRotationY = 90, rotationX = 0 },
+    { model = 'prop_bridge_barrier_gate_01x', targetVector = vector3(342.0478515625,     -2343.5517578125,   11.46424674987793), minRotationY = 90, maxRotationY = -90, rotationX = 180 },
+    { model = 'prop_bridge_barrier_gate_01x', targetVector = vector3(364.7115478515625,  -2288.304443359375, 11.36281585693359), minRotationY = -90, maxRotationY = 90, rotationX = 0 },
+    { model = 'prop_bridge_barrier_gate_01x', targetVector = vector3(342.1158447265625,  -2288.013671875,    11.30535125732421), minRotationY = 90, maxRotationY = -90, rotationX = 180 }
 }
 
-local gateDownData = {
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(364.9, -2343.92, 10.9), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.08, -2343.91, 11.22), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(342.18, -2287.83, 11.21), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 },
-    { modelHash = joaat('prop_bridge_barrier_gate_01x'), targetVector = vector3(365.03, -2287.84, 10.84), targetRotationY = -90, minRotationY = -90, maxRotationY = 0 }
-}
-
-function RotateGate(object, targetRotation)
-    SetEntityRotation(object, targetRotation, 1, true)
+function RotateGate(object, currentRotation, targetRotation)
+    Citizen.CreateThread(function()
+        for targetY = math.round(currentRotation.y), math.round(targetRotation.y), currentRotation.y < targetRotation.y and 1 or -1 do
+            SetEntityRotation(object, vector3( currentRotation.x, targetY, currentRotation.z ), 1, true)
+            Wait(10)
+        end
+    end)
 end
 
-function MoveGate(gateData, isLowering)
-    local foundObjects = GetGamePool('CObject')
-
-    for _, object in ipairs(foundObjects) do
-        local objectModel = GetEntityModel(object)
-        local objectCoords = GetEntityCoords(object)
-        local distance = #(objectCoords - gateData.targetVector)
-
-        if objectModel == gateData.modelHash and distance <= 80.0 then
-            local currentRotation = GetEntityRotation(object)
-            local targetRotationY = isLowering and gateData.minRotationY or gateData.maxRotationY
-            local targetRotation = vector3(currentRotation.x, targetRotationY, currentRotation.z)
-
-            RotateGate(object, targetRotation)
-        end
-    end
+function MoveGate(gateIndex, isLowering)
+    local gate = gateData[gateIndex]
+    local entity = GetClosestObjectOfType(gate.targetVector.x, gate.targetVector.y, gate.targetVector.z, 2.0, gate.model, false, false, false)
+    local currentRotation = GetEntityRotation(entity)
+    local targetRotationY = isLowering and gate.minRotationY or gate.maxRotationY
+    local targetRotation = vector3(currentRotation.x, currentRotation.y + targetRotationY, currentRotation.z)
+    RotateGate(entity, currentRotation, targetRotation)
 end
 
 function MoveGates(gateArray, isLowering)
-    for index, gateData in ipairs(gateArray) do
-        MoveGate(gateData, isLowering)
+    for gateIndex = 1, 4 do
+        MoveGate(gateIndex, isLowering)
     end
 end
 
-RegisterCommand("gate", function(source, args, rawCommand)
-    local gateIndex = tonumber(args[1])
-    local direction = args[2]
+if Config.Commands then
+    RegisterCommand("gate", function(source, args, rawCommand)
+        local gateIndex = tonumber(args[1])
+        local direction = args[2]
 
-    if gateIndex and direction then
-        local selectedGates = direction == "up" and gateUpData or gateDownData
-        MoveGate(selectedGates[gateIndex], direction == "down")
-    end
-end, false)
+        if gateIndex and direction then
+            MoveGate(gateIndex, direction == "down")
+        end
+    end, false)
 
-RegisterCommand("gateall", function(source, args, rawCommand)
-    local direction = args[1]
+    RegisterCommand("gateall", function(source, args, rawCommand)
+        local direction = args[1]
 
-    if direction then
-        local selectedGates = direction == "up" and gateUpData or gateDownData
-        MoveGates(selectedGates, direction == "down")
-    end
-end, false)
+        if direction then
+            for gateIndex = 1, 4 do
+                MoveGate(gateIndex, direction == "down")
+            end
+        end
+    end, false)
+end
 
 -- Wrapper function to export
 function RaiseLowerGateByIndex(gateIndex, isLowering)
-    local selectedGates = isLowering and gateDownData or gateUpData
-    MoveGate(selectedGates[gateIndex], isLowering)
+    MoveGate(gateIndex, isLowering)
 end
 
 -- Exports
@@ -72,12 +63,12 @@ exports('MoveGates', MoveGates)
 exports('RaiseLowerGateByIndex', RaiseLowerGateByIndex)
 
 function StartResource()
-    print('gates are a sexy bunch')
+    print('Bridges 1.0 by Jaysigx loaded')
 end
 
 function StopResource()
-    for _, gateData in ipairs(gateUpData) do
-        MoveGate(gateData, false) -- Reset gates to their initial positions
+    for gateIndex = 1, 4 do
+        MoveGate(gateIndex, false) -- Reset gates to their initial positions
     end
 end
 

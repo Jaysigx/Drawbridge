@@ -63,12 +63,13 @@ Citizen.CreateThread(function()
         CreateOrUpdateBridgeObjects()
     end
 
-    while true do
+    local areBridgesStillLoading = true
+    while areBridgesStillLoading do
         Citizen.Wait(5000)
 
         for index, model in ipairs(models) do
             if HasModelLoaded(model) then
-                print("Bridge " .. index .. " Loaded")
+                areBridgesStillLoading = false
             else
                 print("Bridge " .. index .. " Model is still loading...")
             end
@@ -132,8 +133,8 @@ AddEventHandler('onResourceStart', function()
 end)
 
 -- Network event to spawn bridges - to sync bridge objects among players
-RegisterNetEvent('PE-Bridge:spawnBridge')
-AddEventHandler('PE-Bridge:spawnBridge', function()
+RegisterNetEvent('bridge:spawnBridge')
+AddEventHandler('bridge:spawnBridge', function()
     for index, _ in ipairs(initialBridgePositions) do
         CreateBridgeObject(index)
         CreateOrUpdateBridgeObjects(index)

@@ -121,11 +121,9 @@ exports('MoveBridgeDown', function(bridgeIndex, moveAmount)
     end
 end)
 
-
-
 -- Command to move the bridge up
-RegisterCommand("bridgeUp", function(source, args, rawCommand)
-    if Config.Commands then
+if Config.Commands then
+    RegisterCommand("bridgeUp", function(source, args, rawCommand)
         local index = tonumber(args[1]) or 1 -- Bridge index
         local amount = tonumber(args[2]) or 1.0 -- Amount to move
 
@@ -139,14 +137,10 @@ RegisterCommand("bridgeUp", function(source, args, rawCommand)
         else
             print("Invalid bridge index.")
         end
-    else
-        print("Bridge control commands are disabled in the configuration.")
-    end
-end, false)
+    end, false)
 
--- Command to move the bridge down
-RegisterCommand("bridgeDown", function(source, args, rawCommand)
-    if Config.Commands then
+    -- Command to move the bridge down
+    RegisterCommand("bridgeDown", function(source, args, rawCommand)
         local index = tonumber(args[1]) or 1 -- Bridge index
         local amount = tonumber(args[2]) or 1.0 -- Amount to move
 
@@ -160,7 +154,5 @@ RegisterCommand("bridgeDown", function(source, args, rawCommand)
         else
             print("Invalid bridge index.")
         end
-    else
-        print("Bridge control commands are disabled in the configuration.")
-    end
-end, false)
+    end, false)
+end
