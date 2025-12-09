@@ -1,89 +1,25 @@
-function BlinkBridgeLights( seconds )
+-- client/cl_bridgesequence.lua
+-- Client only requests the server to run the authoritative sequence.
+-- All lights, gates, and bridge motion are driven by the server.
 
-    for _i = 1, math.floor( seconds / 2 ) do
-        for lightIndex = 5, 8 do
-            ToggleTrafficLight(lightIndex, 1, false)
-        end
-        Citizen.Wait(1000)
-        for lightIndex = 5, 8 do
-            ToggleTrafficLight(lightIndex, -1, false)
-        end
-        Citizen.Wait(1000)
-    end
-
-end
-
-function OpenBridgeSequence()
-
-    -- enable all traffic stop zones
-    enableTrafficZones()
-    
-    -- turn all traffic lights red
-    for lightIndex = 1, 8 do
-        ToggleTrafficLight(lightIndex, 1, false)
-    end
-
-    -- blink for 10 seconds before lowering the gates to allow all traffic to cross
-    BlinkBridgeLights( 10 )
-
-    -- move all the gates down
-    for gateIndex = 1, 4 do
-        MoveGate(gateIndex, true)
-    end
-    
-    -- blink for 5 seconds
-    BlinkBridgeLights( 5 )
-
-    -- move the bridge up
-    Citizen.CreateThread(function()
-        -- find the bridge entity
-        if ModelExistsAtIndex(1) then
-            EnsureBridgeEntity(1)
-            MoveBridgeUp(1, 20)
-        else
-            print("Bridge " .. index .. " model does not exist.")
-        end
-    end)
-
-    -- blink for 30 seconds
-    BlinkBridgeLights( 30 )
-
-    -- move the bridge down
-    Citizen.CreateThread(function()
-        -- find the bridge entity
-        if ModelExistsAtIndex(1) then
-            EnsureBridgeEntity(1)
-            MoveBridgeDown(1, 20)
-        else
-            print("Bridge " .. index .. " model does not exist.")
-        end
-    end)
-
-    -- blink for 35 seconds
-    BlinkBridgeLights( 35 )
-
-    -- move all the gates up
-    for gateIndex = 1, 4 do
-        MoveGate(gateIndex, false)
-    end
-
-    -- blink for 5 seconds
-    BlinkBridgeLights( 5 )
-
-    -- turn all traffic lightsgreen
-    for lightIndex = 1, 8 do
-        ToggleTrafficLight(lightIndex, 0, false)
-    end
-
-    disableTrafficZones()
-
-end
-
-RegisterCommand("bridgeSequence", function(source, args, rawCommand)
-    TriggerServerEvent('bridge:OpenBridgeSequence')
+RegisterCommand("bridgeSequence", function(_, args)
+    local idx   = tonumber(args[1]) or 1
+    local up    = tonumber(args[2]) or 20.0
+    local down  = tonumber(args[3]) or 20.0
+    local upSpd = tonumber(args[4]) or 0.18
+    local dnSpd = tonumber(args[5]) or 0.28
+    TriggerServerEvent('bridge:RunSequence', idx, up, down, upSpd, dnSpd)
 end, false)
 
+-- Optional: server can broadcast a start; clients forward it back to server
 RegisterNetEvent('bridge:OpenBridgeSequence')
-AddEventHandler('bridge:OpenBridgeSequence', function()
-    OpenBridgeSequence()
+AddEventHandler('bridge:OpenBridgeSequence', function(idx, up, down, upSpd, dnSpd)
+    TriggerServerEvent(
+        'bridge:RunSequence',
+        tonumber(idx)   or 1,
+        tonumber(up)    or 20.0,
+        tonumber(down)  or 20.0,
+        tonumber(upSpd) or 0.18,
+        tonumber(dnSpd) or 0.28
+    )
 end)
